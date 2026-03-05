@@ -1,0 +1,33 @@
+---
+description: Partrunner brand identity rules — enforced in all visual and prompt decisions
+globs: src/data/brand.ts
+alwaysApply: false
+---
+
+# Partrunner Brand Identity
+
+## Colors (STRICT — only these 3 for brand elements)
+
+- `#FDD238` — Partrunner Yellow (headlines, accents, vests)
+- `#000000` — Black (logo backgrounds, secondary text)
+- `#FFFFFF` — White (contrast)
+- Scene colors can be natural — restriction applies to typography, logo, brand overlays
+
+## Editorial style
+
+- Genre: "Hiperrealismo cinematográfico + surrealismo logístico"
+- Surreal/absurd scenes where Partrunner logistics solves the impossible
+- Smart Mexican humor — irreverent but never vulgar
+- Every image MUST have: branded vehicle, worker with vest, surreal element, cinematic lighting
+
+## Logo rules
+
+- Logo URLs are real Supabase URLs — don't replace them
+- Logo must always be present in generated concepts (on vehicle or worker vest)
+- AI image models CANNOT render actual logos — use as metadata for post-processing
+
+## Text in images
+
+- AI models CANNOT reliably render text
+- `prompt_compiled` should include "leave clean negative space for text overlay"
+- Headlines are generated as METADATA, not as image generation instructions

@@ -1,0 +1,5 @@
+{
+  "name": "Partrunner Image Generator",
+  "description": "Generador de imágenes editoriales con IA. Claude transforma prompts simples en dirección de arte profesional, Gemini genera las imágenes.",
+  "requestFramePermissions": []
+}

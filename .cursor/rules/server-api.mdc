@@ -1,0 +1,45 @@
+---
+description: Express server and API route conventions
+globs: server.ts
+alwaysApply: false
+---
+
+# Server & API Routes
+
+- Single `server.ts` file at project root — keep it self-contained
+- Uses `tsx` to run TypeScript directly (no compilation step)
+- In production, serves Vite build from `dist/`
+
+## API routes
+
+- `POST /api/transform` — Claude (Anthropic SDK) transforms prompt → editorial JSON
+- `POST /api/generate` — Gemini (Google GenAI SDK) generates image from `prompt_compiled`
+
+## Error handling pattern
+
+```typescript
+catch (error: unknown) {
+  console.error("Route error:", error);
+  const msg = error instanceof Error ? error.message : "Unknown error";
+  res.status(500).json({ error: `Description: ${msg}` });
+}
+```
+
+## Environment variables
+
+- `ANTHROPIC_API_KEY` — required for Claude
+- `GEMINI_API_KEY` — required for Gemini
+- `GEMINI_IMAGE_MODEL` — optional override (default: `gemini-2.0-flash-preview-image-generation`)
+- `PORT` — server port (default: 3001, Railway assigns automatically)
+
+## Claude response parsing
+
+Always strip markdown fences before parsing — Claude occasionally wraps JSON in backticks despite instructions:
+
+```typescript
+let jsonText = textBlock.text.trim();
+if (jsonText.startsWith("```")) {
+  jsonText = jsonText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+}
+const data = JSON.parse(jsonText);
+```

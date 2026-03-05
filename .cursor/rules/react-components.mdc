@@ -1,0 +1,32 @@
+---
+description: React component conventions for this project
+globs: src/**/*.tsx
+alwaysApply: false
+---
+
+# React Component Patterns
+
+- Functional components with TypeScript, no class components
+- Props interfaces defined inline or co-located in the same file
+- State management via `useState` — no external state library
+- Animations via `motion/react` (Motion library, successor to Framer Motion)
+- Icons from `lucide-react`
+- Styling with Tailwind CSS 4 utility classes inline
+
+## Color palette (use these exact values)
+
+- Primary yellow: `#FDD238` → `bg-[#FDD238]`, `text-[#FDD238]`
+- Black: `#000000`
+- White: `#FFFFFF`
+- Dark backgrounds: `bg-[#0a0a0a]`, `bg-[#111]`
+- Borders: `border-white/10`
+
+## Error handling
+
+```tsx
+// Always type errors properly in catch blocks
+catch (err: unknown) {
+  const msg = err instanceof Error ? err.message : "Error desconocido";
+  setError(msg);
+}
+```
