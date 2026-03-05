@@ -47,3 +47,7 @@ Source of truth for all visual decisions in this project.
 - Brand color in prompts: #FFD840 (not #FDD238 or #FFC107)
 - AI models cannot render text — headlines are metadata for overlay
 - prompt_compiled should request "clean negative space for text overlay"
+- **Logo identity:** The real logo PNG is sent as a reference image to Gemini alongside prompt_compiled
+- prompt_compiled MUST include: "The Partrunner logo shown in the reference image must appear IDENTICALLY reproduced"
+- Logo variant is selected by Claude in the editorial JSON and mapped to the correct PNG via LOGO_VARIANT_MAP in server.ts
+- NEVER describe the logo textually for the image model — always rely on the reference image

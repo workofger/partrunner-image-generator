@@ -1,4 +1,5 @@
 import express from "express";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
@@ -45,11 +46,14 @@ PALETA DE MARCA (aplica solo a elementos de branding — la escena puede tener c
 - Blanco: #FFFFFF (contraste)
 - Acento: #F29F05 (detalles dorados/cálidos)
 
-LOGO PARTRUNNER:
-- El logo debe estar presente visualmente — preferentemente en el vehículo como branding real (pintado en lateral, en puertas)
-- Alternativa: en el chaleco de los trabajadores
-- El isotipo de Partrunner es una "R" estilizada como persona corriendo con un paquete
-- Logo negro sobre fondos amarillos, logo blanco/amarillo sobre fondos oscuros
+LOGO PARTRUNNER — REGLA DE IDENTIDAD EXACTA:
+- Se enviará la imagen del logo REAL de Partrunner como referencia junto al prompt de generación.
+- El modelo de imagen DEBE reproducir el logo IDÉNTICAMENTE — sin modificar, sin reinterpretar, sin estilizar.
+- NUNCA inventar, rediseñar ni "inspirarse" en el logo. Debe ser una copia EXACTA de la referencia.
+- El isotipo de Partrunner es una "R" estilizada como persona corriendo con un paquete — pero NO describas esto textualmente, el logo se inyecta como imagen de referencia.
+- En el prompt_compiled, incluye la instrucción: "The Partrunner logo shown in the reference image must appear IDENTICALLY reproduced — exact same shape, proportions, colors, and details. Do NOT redesign, reinterpret, or approximate the logo."
+- Placement preferente: pintado/adherido en el vehículo (lateral, puertas) como branding real, o en el chaleco de los trabajadores.
+- Logo negro sobre fondos amarillos/claros, logo blanco/amarillo sobre fondos oscuros.
 
 DIRECCIÓN DE CÁMARA:
 - Wide angle (24-35mm) para capturar la escena completa
@@ -76,7 +80,7 @@ Cuando recibas un prompt del usuario:
 2. Inventa una escena surreal que conecte el concepto con la logística
 3. Genera un headline memorable en español mexicano (máx 8 palabras, humor inteligente)
 4. Describe la escena con detalle cinematográfico
-5. Compila un prompt editorial completo en INGLÉS para el modelo de imagen (mínimo 80 palabras)
+5. Compila un prompt editorial completo en INGLÉS para el modelo de imagen (mínimo 80 palabras). OBLIGATORIO incluir en el prompt_compiled: "The Partrunner logo shown in the reference image must appear IDENTICALLY reproduced in the scene — exact same shape, proportions, colors, and details. Do NOT redesign, reinterpret, or approximate the logo. Place it [placement]."
 6. Devuelve ÚNICAMENTE el JSON válido — sin markdown, sin backticks, sin texto antes ni después`;
 
 // ---------------------------------------------------------------------------
@@ -170,9 +174,36 @@ Devuelve el JSON con esta estructura EXACTA (todos los campos son obligatorios):
 // POST /api/generate — Gemini generates an image from the compiled prompt
 // ---------------------------------------------------------------------------
 
+const LOGO_VARIANT_MAP: Record<string, string> = {
+  full_color: "logo-full-color.png",
+  full_bicolor: "logo-full-bicolor.png",
+  full_negative: "logo-full-white.png",
+  full_positive: "logo-full-black.png",
+  iso_color: "icon-color.png",
+  iso_negative: "icon-white.png",
+  iso_positive: "icon-black.png",
+};
+
+function readLogoAsBase64(variant: string): { data: string; mimeType: string } | null {
+  const filename = LOGO_VARIANT_MAP[variant] || "logo-full-color.png";
+  const logoPath = path.join(__dirname, "public", "images", filename);
+  try {
+    const buffer = fs.readFileSync(logoPath);
+    return { data: buffer.toString("base64"), mimeType: "image/png" };
+  } catch {
+    console.warn(`Logo file not found: ${logoPath}, falling back to logo-full-color.png`);
+    try {
+      const fallback = fs.readFileSync(path.join(__dirname, "public", "images", "logo-full-color.png"));
+      return { data: fallback.toString("base64"), mimeType: "image/png" };
+    } catch {
+      return null;
+    }
+  }
+}
+
 app.post("/api/generate", async (req, res) => {
   try {
-    const { prompt_compiled, aspect_ratio } = req.body;
+    const { prompt_compiled, aspect_ratio, logo_variant } = req.body;
 
     if (!prompt_compiled) {
       res.status(400).json({ error: "prompt_compiled is required" });
@@ -181,9 +212,22 @@ app.post("/api/generate", async (req, res) => {
 
     const model = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview";
 
+    const logo = readLogoAsBase64(logo_variant || "full_color");
+
+    const contents: Array<Record<string, unknown>> = [];
+
+    if (logo) {
+      contents.push({ inlineData: { mimeType: logo.mimeType, data: logo.data } });
+      contents.push({
+        text: `REFERENCE IMAGE ABOVE: This is the exact Partrunner logo. You MUST reproduce this logo IDENTICALLY in the generated image — same shape, same proportions, same colors, same details. Do NOT redesign, simplify, reinterpret, or approximate it. It must look like the logo was physically placed/painted on the scene elements.\n\n${prompt_compiled}`,
+      });
+    } else {
+      contents.push({ text: prompt_compiled });
+    }
+
     const response = await genai.models.generateContent({
       model,
-      contents: prompt_compiled,
+      contents,
       config: {
         responseModalities: ["TEXT", "IMAGE"],
         imageConfig: {

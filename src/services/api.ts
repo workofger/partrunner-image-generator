@@ -24,11 +24,12 @@ export async function transformPrompt(
 export async function generateImage(
   prompt_compiled: string,
   aspect_ratio: string,
+  logo_variant?: string,
 ): Promise<string> {
   const res = await fetch(`${API_BASE}/api/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt_compiled, aspect_ratio }),
+    body: JSON.stringify({ prompt_compiled, aspect_ratio, logo_variant }),
   });
 
   if (!res.ok) {

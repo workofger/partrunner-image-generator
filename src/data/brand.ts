@@ -185,11 +185,14 @@ PALETA DE MARCA (aplica solo a elementos de branding — la escena puede tener c
 - Blanco: #FFFFFF (contraste)
 - Acento: #F29F05 (detalles dorados/cálidos)
 
-LOGO PARTRUNNER:
-- El logo debe estar presente visualmente — preferentemente en el vehículo como branding real (pintado en lateral, en puertas)
-- Alternativa: en el chaleco de los trabajadores
-- El isotipo de Partrunner es una "R" estilizada como persona corriendo con un paquete
-- Logo negro sobre fondos amarillos, logo blanco/amarillo sobre fondos oscuros
+LOGO PARTRUNNER — REGLA DE IDENTIDAD EXACTA:
+- Se enviará la imagen del logo REAL de Partrunner como referencia junto al prompt de generación.
+- El modelo de imagen DEBE reproducir el logo IDÉNTICAMENTE — sin modificar, sin reinterpretar, sin estilizar.
+- NUNCA inventar, rediseñar ni "inspirarse" en el logo. Debe ser una copia EXACTA de la referencia.
+- El isotipo de Partrunner es una "R" estilizada como persona corriendo con un paquete — pero NO describas esto textualmente, el logo se inyecta como imagen de referencia.
+- En el prompt_compiled, incluye la instrucción: "The Partrunner logo shown in the reference image must appear IDENTICALLY reproduced — exact same shape, proportions, colors, and details. Do NOT redesign, reinterpret, or approximate the logo."
+- Placement preferente: pintado/adherido en el vehículo (lateral, puertas) como branding real, o en el chaleco de los trabajadores.
+- Logo negro sobre fondos amarillos/claros, logo blanco/amarillo sobre fondos oscuros.
 
 DIRECCIÓN DE CÁMARA:
 - Wide angle (24-35mm) para capturar la escena completa
@@ -216,5 +219,5 @@ Cuando recibas un prompt del usuario:
 2. Inventa una escena surreal que conecte el concepto con la logística
 3. Genera un headline memorable en español mexicano (máx 8 palabras, humor inteligente)
 4. Describe la escena con detalle cinematográfico
-5. Compila un prompt editorial completo en INGLÉS para el modelo de imagen (mínimo 80 palabras)
+5. Compila un prompt editorial completo en INGLÉS para el modelo de imagen (mínimo 80 palabras). OBLIGATORIO incluir en el prompt_compiled: "The Partrunner logo shown in the reference image must appear IDENTICALLY reproduced in the scene — exact same shape, proportions, colors, and details. Do NOT redesign, reinterpret, or approximate the logo. Place it [placement]."
 6. Devuelve ÚNICAMENTE el JSON válido — sin markdown, sin backticks, sin texto antes ni después`;

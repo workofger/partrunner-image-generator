@@ -17,22 +17,26 @@ alwaysApply: false
 
 ## Gemini image generation
 
-Uses `generateContent` (NOT `generateImages`) with the Nano Banana Pro model:
+Uses `generateContent` (NOT `generateImages`) with the Nano Banana Pro model.
+The logo PNG is read from `public/images/` and sent as a reference image alongside the text prompt:
 
 ```typescript
+const logo = readLogoAsBase64(logo_variant || "full_color");
+const contents = [
+  { inlineData: { mimeType: "image/png", data: logoBase64 } },
+  { text: `REFERENCE IMAGE ABOVE: ... reproduce logo IDENTICALLY ...\n\n${prompt_compiled}` },
+];
 const response = await genai.models.generateContent({
   model: "gemini-3-pro-image-preview",
-  contents: prompt_compiled,
+  contents,
   config: {
     responseModalities: ["TEXT", "IMAGE"],
-    imageConfig: {
-      aspectRatio: "16:9",
-      imageSize: "2K",
-    },
+    imageConfig: { aspectRatio: "16:9", imageSize: "2K" },
   },
 });
 ```
 
+Logo variant mapping (`LOGO_VARIANT_MAP`) maps Claude's `logo.variant` string to the correct PNG file.
 Image is extracted from `response.candidates[0].content.parts` where `part.inlineData` exists.
 
 ## Environment variables

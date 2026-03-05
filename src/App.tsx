@@ -47,7 +47,11 @@ export default function App() {
     setStep("generating");
     setError(null);
     try {
-      const image = await generateImage(editorialData.prompt_compiled, format.gemini_aspect_ratio);
+      const image = await generateImage(
+        editorialData.prompt_compiled,
+        format.gemini_aspect_ratio,
+        editorialData.logo.variant,
+      );
       setGeneratedImage(image);
       setStep("complete");
     } catch (err: unknown) {

@@ -86,11 +86,19 @@ Para cambiar el modelo, setear `GEMINI_IMAGE_MODEL` en `.env`.
 [Usuario] → prompt simple + formato
     ↓
 [Express /api/transform] → Claude Sonnet → JSON editorial estructurado
+    ↓                                        (incluye logo.variant)
+[Express /api/generate] → Lee logo PNG de public/images/
+    ↓                      según logo.variant del JSON
+    ↓                      Envía logo como imagen de referencia + prompt_compiled
     ↓
-[Express /api/generate] → Gemini 3 Pro Image → imagen 2K
+[Gemini 3 Pro Image]   → Reproduce logo IDÉNTICO en la escena → imagen 2K
     ↓
 [Frontend] → muestra imagen + JSON + descarga
 ```
+
+### Logo como referencia
+
+El logo real (PNG) se envía como imagen de referencia multimodal a Gemini junto con el `prompt_compiled`. Esto asegura que el logo en las imágenes generadas sea **idéntico** al logo oficial, no una aproximación o reinterpretación del modelo.
 
 ## Design System
 
