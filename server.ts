@@ -69,11 +69,12 @@ PROHIBIDO:
 - Contenido político, religioso ofensivo o controversial
 - Colores fuera de la paleta en elementos de marca
 
-REGLA CRÍTICA SOBRE TEXTO EN LA IMAGEN:
-- Los modelos de generación de imágenes NO pueden renderizar texto legible de forma confiable
-- NUNCA incluyas instrucciones de renderizar texto, tipografía, headlines o letras en el campo prompt_compiled
-- EN VEZ DE ESO, incluye "clean negative space in [posición] for text overlay" para que el equipo de diseño agregue texto después
-- El campo headline se genera como METADATA para composición posterior, no como instrucción al modelo de imagen
+REGLA SOBRE TEXTO EN LA IMAGEN:
+- Gemini 3 Pro Image SÍ puede renderizar texto legible y estilizado.
+- SIN EMBARGO, para máximo control editorial, preferimos NO renderizar el headline directamente en la imagen.
+- En el prompt_compiled, incluye "leave clean negative space in [posición] for headline text overlay in post-production" para que el equipo de diseño componga el texto después.
+- El campo headline se genera como METADATA para composición posterior.
+- Si el usuario pide explícitamente texto en la imagen, entonces SÍ puedes incluirlo en el prompt_compiled con la instrucción de renderizarlo.
 
 Cuando recibas un prompt del usuario:
 1. Identifica el concepto central
@@ -184,20 +185,13 @@ const LOGO_VARIANT_MAP: Record<string, string> = {
   iso_positive: "icon-black.png",
 };
 
-function readLogoAsBase64(variant: string): { data: string; mimeType: string } | null {
-  const filename = LOGO_VARIANT_MAP[variant] || "logo-full-color.png";
+function readLogoPng(filename: string): { data: string; mimeType: string } | null {
   const logoPath = path.join(__dirname, "public", "images", filename);
   try {
     const buffer = fs.readFileSync(logoPath);
     return { data: buffer.toString("base64"), mimeType: "image/png" };
   } catch {
-    console.warn(`Logo file not found: ${logoPath}, falling back to logo-full-color.png`);
-    try {
-      const fallback = fs.readFileSync(path.join(__dirname, "public", "images", "logo-full-color.png"));
-      return { data: fallback.toString("base64"), mimeType: "image/png" };
-    } catch {
-      return null;
-    }
+    return null;
   }
 }
 
@@ -212,18 +206,30 @@ app.post("/api/generate", async (req, res) => {
 
     const model = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview";
 
-    const logo = readLogoAsBase64(logo_variant || "full_color");
+    const primaryFile = LOGO_VARIANT_MAP[logo_variant] || "logo-full-color.png";
+    const primaryLogo = readLogoPng(primaryFile);
+    const fullColorLogo = primaryFile !== "logo-full-color.png" ? readLogoPng("logo-full-color.png") : null;
+    const iconLogo = readLogoPng("icon-color.png");
 
     const contents: Array<Record<string, unknown>> = [];
 
-    if (logo) {
-      contents.push({ inlineData: { mimeType: logo.mimeType, data: logo.data } });
-      contents.push({
-        text: `REFERENCE IMAGE ABOVE: This is the exact Partrunner logo. You MUST reproduce this logo IDENTICALLY in the generated image — same shape, same proportions, same colors, same details. Do NOT redesign, simplify, reinterpret, or approximate it. It must look like the logo was physically placed/painted on the scene elements.\n\n${prompt_compiled}`,
-      });
-    } else {
-      contents.push({ text: prompt_compiled });
+    const logoPrefix = primaryLogo
+      ? `The reference images provided are the EXACT Partrunner brand logos. You MUST reproduce the primary logo (first reference image) IDENTICALLY in the generated scene — same exact shape, proportions, colors, and every detail. Do NOT redesign, reinterpret, simplify, or approximate the logo in any way. It should look like the real logo was physically painted, printed, or adhered onto the scene elements (vehicle sides, doors, safety vests).\n\n`
+      : "";
+
+    contents.push({ text: `${logoPrefix}${prompt_compiled}` });
+
+    if (primaryLogo) {
+      contents.push({ inlineData: { mimeType: primaryLogo.mimeType, data: primaryLogo.data } });
     }
+    if (fullColorLogo) {
+      contents.push({ inlineData: { mimeType: fullColorLogo.mimeType, data: fullColorLogo.data } });
+    }
+    if (iconLogo && primaryFile !== "icon-color.png") {
+      contents.push({ inlineData: { mimeType: iconLogo.mimeType, data: iconLogo.data } });
+    }
+
+    console.log(`Generating with ${model} | logo: ${primaryFile} | refs: ${contents.length - 1} images`);
 
     const response = await genai.models.generateContent({
       model,
