@@ -28,20 +28,22 @@ export default function FormatSelector({ selected, onChange, disabled }: FormatS
             disabled={disabled}
             onClick={() => onChange(key)}
             className={`
-              relative flex flex-col items-center gap-1.5 rounded-lg border p-2.5 text-center transition-all
+              relative flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-center transition-all duration-200
               ${active
-                ? "border-[#FDD238] bg-[#FDD238]/10 text-white"
-                : "border-white/10 bg-white/[0.03] text-white/50 hover:border-white/20 hover:text-white/70"}
+                ? "border-partrunner-yellow bg-partrunner-yellow-50 text-partrunner-black shadow-partrunner"
+                : "border-partrunner-gray-light bg-white text-partrunner-gray-dark hover:border-partrunner-yellow/40 hover:bg-partrunner-yellow-50/50"}
               ${disabled ? "pointer-events-none opacity-40" : "cursor-pointer"}
             `}
           >
             <div
-              className={`w-full max-w-[40px] rounded-[3px] border ${
-                active ? "border-[#FDD238]/60 bg-[#FDD238]/20" : "border-white/20 bg-white/5"
+              className={`w-full max-w-[36px] rounded-[3px] border ${
+                active
+                  ? "border-partrunner-yellow bg-partrunner-yellow/20"
+                  : "border-partrunner-gray-light bg-partrunner-bg-main"
               } ${ASPECT_STYLES[fmt.aspect_ratio] || "aspect-video"}`}
             />
-            <span className="text-[10px] font-medium leading-tight">{fmt.label}</span>
-            <span className="text-[9px] opacity-50">{fmt.resolution}</span>
+            <span className="text-[10px] font-semibold leading-tight">{fmt.label}</span>
+            <span className="text-[9px] text-[--color-text-muted]">{fmt.resolution}</span>
           </button>
         );
       })}

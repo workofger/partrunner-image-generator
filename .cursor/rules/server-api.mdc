@@ -13,28 +13,38 @@ alwaysApply: false
 ## API routes
 
 - `POST /api/transform` — Claude (Anthropic SDK) transforms prompt → editorial JSON
-- `POST /api/generate` — Gemini (Google GenAI SDK) generates image from `prompt_compiled`
+- `POST /api/generate` — Gemini 3 Pro Image (Google GenAI SDK) generates image from `prompt_compiled`
 
-## Error handling pattern
+## Gemini image generation
+
+Uses `generateContent` (NOT `generateImages`) with the Nano Banana Pro model:
 
 ```typescript
-catch (error: unknown) {
-  console.error("Route error:", error);
-  const msg = error instanceof Error ? error.message : "Unknown error";
-  res.status(500).json({ error: `Description: ${msg}` });
-}
+const response = await genai.models.generateContent({
+  model: "gemini-3-pro-image-preview",
+  contents: prompt_compiled,
+  config: {
+    responseModalities: ["TEXT", "IMAGE"],
+    imageConfig: {
+      aspectRatio: "16:9",
+      imageSize: "2K",
+    },
+  },
+});
 ```
+
+Image is extracted from `response.candidates[0].content.parts` where `part.inlineData` exists.
 
 ## Environment variables
 
 - `ANTHROPIC_API_KEY` — required for Claude
 - `GEMINI_API_KEY` — required for Gemini
-- `GEMINI_IMAGE_MODEL` — optional override (default: `gemini-2.0-flash-preview-image-generation`)
+- `GEMINI_IMAGE_MODEL` — optional override (default: `gemini-3-pro-image-preview`)
 - `PORT` — server port (default: 3001, Railway assigns automatically)
 
 ## Claude response parsing
 
-Always strip markdown fences before parsing — Claude occasionally wraps JSON in backticks despite instructions:
+Always strip markdown fences before parsing:
 
 ```typescript
 let jsonText = textBlock.text.trim();

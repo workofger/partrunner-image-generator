@@ -4,20 +4,25 @@ export const BRAND = {
   industry: "logistics, last-mile delivery, operations",
 
   colors: {
-    primary: "#FDD238",
-    primary_name: "Partrunner Yellow",
-    black: "#000000",
-    white: "#FFFFFF",
-    rules: [
-      "SOLO estos 3 colores en elementos de marca (headlines, logos, overlays)",
-      "La escena puede tener colores naturales — la restricción aplica a tipografía, logo y elementos de marca",
-      "Headline SIEMPRE en #FDD238 con outline/sombra negra para legibilidad",
-    ],
+    yellow: "#FFD840",
+    yellowDark: "#FED330",
+    yellowAccent: "#F29F05",
+    yellowLight: "#FFF9E5",
+    black: "#14142B",
+    charcoal: "#2D2D2D",
+    grayDark: "#4E4B66",
+    grayLight: "#D9DBE9",
+    bgMain: "#F5F7FB",
+    bgCard: "#FFFFFF",
+    green: "#26B76E",
+    red: "#FF4757",
+    teal: "#10C89B",
   },
 
   typography: {
-    headlines: "Bebas Neue — bold, condensed, all-caps",
-    body: "Barlow — clean, modern sans-serif",
+    font: "Inter",
+    headlines: "Inter — bold, all-caps for hero headlines",
+    body: "Inter — regular weight, clean sans-serif",
     rules: [
       "Headlines: máximo 8 palabras, impactantes, con humor inteligente",
       "Idioma default: español mexicano",
@@ -26,43 +31,21 @@ export const BRAND = {
   },
 
   logos: {
-    full_color: {
-      url: "https://lrzcturtxtzhdzqacefy.supabase.co/storage/v1/object/public/Imagenes/FULL,%20COLOR@2x.png",
-      usage: "Uso general sobre fondos neutros",
-    },
-    full_bicolor: {
-      url: "https://lrzcturtxtzhdzqacefy.supabase.co/storage/v1/object/public/Imagenes/FULL,%20BICOLOR@2x.png",
-      usage: "Sobre fondos de color de marca",
-    },
-    full_negative: {
-      url: "https://lrzcturtxtzhdzqacefy.supabase.co/storage/v1/object/public/Imagenes/FULL,%20NEG@2x.png",
-      usage: "Sobre fondos oscuros — logo amarillo/blanco",
-    },
-    full_positive: {
-      url: "https://lrzcturtxtzhdzqacefy.supabase.co/storage/v1/object/public/Imagenes/FULL,%20POS@2x.png",
-      usage: "Sobre fondos claros — logo negro",
-    },
-    iso_color: {
-      url: "https://lrzcturtxtzhdzqacefy.supabase.co/storage/v1/object/public/Imagenes/ISO,%20COLOR@2x.png",
-      usage: "Isotipo a color para iconos y fondos de marca",
-    },
-    iso_negative: {
-      url: "https://lrzcturtxtzhdzqacefy.supabase.co/storage/v1/object/public/Imagenes/ISO,%20NEG@2x.png",
-      usage: "Isotipo sobre fondos oscuros",
-    },
-    iso_positive: {
-      url: "https://lrzcturtxtzhdzqacefy.supabase.co/storage/v1/object/public/Imagenes/ISO,%20POS@2x.png",
-      usage: "Isotipo sobre fondos claros",
-    },
+    fullColor: "/images/logo-full-color.png",
+    fullBicolor: "/images/logo-full-bicolor.png",
+    fullWhite: "/images/logo-full-white.png",
+    fullBlack: "/images/logo-full-black.png",
+    iconColor: "/images/icon-color.png",
+    iconWhite: "/images/icon-white.png",
+    iconBlack: "/images/icon-black.png",
   },
 
-  logo_rules: [
-    "Logo SIEMPRE presente en la imagen — preferencia en el vehículo como branding real",
-    "Alternativa: esquina inferior derecha con padding",
-    "NUNCA blanco sobre amarillo ni amarillo sobre blanco",
-    "El isotipo (R-persona corriendo con paquete) puede aparecer en chalecos de los trabajadores",
-    "No rotar, distorsionar ni aplicar efectos sobre el logo",
-  ],
+  logoRules: {
+    onYellowBg: "fullBlack or iconBlack",
+    onDarkBg: "fullWhite or iconWhite",
+    onLightBg: "fullBlack or iconBlack",
+    onBrandBg: "fullBicolor or iconColor",
+  },
 
   editorial_style: {
     genre: "Hiperrealismo cinematográfico + surrealismo logístico",
@@ -128,7 +111,6 @@ export interface Format {
   resolution: string;
   platform: string;
   notes: string;
-  icon: string;
 }
 
 export const FORMATS: Record<FormatKey, Format> = {
@@ -139,7 +121,6 @@ export const FORMATS: Record<FormatKey, Format> = {
     resolution: "1080×1080",
     platform: "instagram",
     notes: "Headline centrado. Logo abajo centrado.",
-    icon: "□",
   },
   instagram_story: {
     label: "IG / WA Story",
@@ -148,7 +129,6 @@ export const FORMATS: Record<FormatKey, Format> = {
     resolution: "1080×1920",
     platform: "instagram_story",
     notes: "Composición vertical. Headline arriba, escena al centro, logo abajo.",
-    icon: "▯",
   },
   linkedin_facebook: {
     label: "LinkedIn / Facebook",
@@ -157,7 +137,6 @@ export const FORMATS: Record<FormatKey, Format> = {
     resolution: "1200×628",
     platform: "linkedin",
     notes: "Formato wide. Headline a la izquierda o centrado. Logo esquina inferior derecha.",
-    icon: "▭",
   },
   whatsapp_status: {
     label: "WhatsApp Status",
@@ -166,7 +145,6 @@ export const FORMATS: Record<FormatKey, Format> = {
     resolution: "1080×1920",
     platform: "whatsapp",
     notes: "Texto grande y legible en móvil. Mismo formato que IG Story.",
-    icon: "▯",
   },
   billboard: {
     label: "Billboard / Banner",
@@ -175,7 +153,6 @@ export const FORMATS: Record<FormatKey, Format> = {
     resolution: "1920×1080",
     platform: "web",
     notes: "Formato landscape principal. Máxima calidad cinematográfica.",
-    icon: "▬",
   },
   presentation: {
     label: "Presentación",
@@ -184,7 +161,6 @@ export const FORMATS: Record<FormatKey, Format> = {
     resolution: "1920×1080",
     platform: "presentation",
     notes: "Para slides. Puede ser más limpio. Logo discreto esquina inferior.",
-    icon: "▬",
   },
 };
 
@@ -204,14 +180,16 @@ ELEMENTOS OBLIGATORIOS EN CADA IMAGEN:
 4. Iluminación cinematográfica (golden hour, blue hour, o iluminación nocturna dramática)
 
 PALETA DE MARCA (aplica solo a elementos de branding — la escena puede tener colores naturales):
-- Amarillo: #FDD238 (chalecos, acentos de vehículos, elementos de marca)
-- Negro: #000000 (fondos de logo, texto)
+- Amarillo Partrunner: #FFD840 (chalecos, acentos de vehículos, elementos de marca)
+- Negro Partrunner: #14142B (fondos de logo, texto)
 - Blanco: #FFFFFF (contraste)
+- Acento: #F29F05 (detalles dorados/cálidos)
 
 LOGO PARTRUNNER:
 - El logo debe estar presente visualmente — preferentemente en el vehículo como branding real (pintado en lateral, en puertas)
 - Alternativa: en el chaleco de los trabajadores
 - El isotipo de Partrunner es una "R" estilizada como persona corriendo con un paquete
+- Logo negro sobre fondos amarillos, logo blanco/amarillo sobre fondos oscuros
 
 DIRECCIÓN DE CÁMARA:
 - Wide angle (24-35mm) para capturar la escena completa

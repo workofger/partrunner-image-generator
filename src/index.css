@@ -1,8 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", "Barlow", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  --color-partrunner-yellow: #FFD840;
+  --color-partrunner-yellow-dark: #FED330;
+  --color-partrunner-yellow-accent: #F29F05;
+  --color-partrunner-yellow-light: #FFF9E5;
+  --color-partrunner-yellow-50: #FFFBEB;
+  --color-partrunner-black: #14142B;
+  --color-partrunner-charcoal: #2D2D2D;
+  --color-partrunner-gray-dark: #4E4B66;
+  --color-partrunner-gray-light: #D9DBE9;
+  --color-partrunner-bg-main: #F5F7FB;
+  --color-partrunner-bg-card: #FFFFFF;
+  --color-partrunner-green: #26B76E;
+  --color-partrunner-red: #FF4757;
+  --color-partrunner-teal: #10C89B;
+
+  --shadow-card: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 8px 24px 0 rgba(0, 0, 0, 0.08);
+  --shadow-partrunner: 0 4px 14px 0 rgba(255, 216, 64, 0.25);
+  --shadow-partrunner-lg: 0 10px 40px 0 rgba(255, 216, 64, 0.3);
+
+  --animate-fade-in: fadeIn 0.3s ease-out;
+  --animate-slide-up: slideUp 0.4s ease-out;
+  --animate-scale-in: scaleIn 0.2s ease-out;
+}
+
+:root {
+  --color-text-muted: #A0A3BD;
+  --color-border-light: #EFF0F6;
 }
 
 html {
@@ -10,7 +39,80 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar for JSON viewer */
+/* Component classes */
+.btn-primary {
+  @apply bg-partrunner-yellow hover:bg-partrunner-yellow-dark
+         text-partrunner-black font-semibold
+         py-3 px-6 rounded-xl
+         shadow-partrunner hover:shadow-partrunner-lg
+         transition-all duration-200 hover:-translate-y-0.5
+         cursor-pointer;
+}
+
+.btn-primary:disabled {
+  @apply opacity-40 cursor-not-allowed shadow-none translate-y-0;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 hover:bg-gray-200
+         text-partrunner-black font-medium
+         py-2.5 px-5 rounded-xl
+         transition-all duration-200
+         cursor-pointer;
+}
+
+.btn-ghost {
+  @apply text-partrunner-gray-dark hover:text-partrunner-black hover:bg-gray-100
+         font-medium py-2 px-4 rounded-lg
+         transition-all duration-200
+         cursor-pointer;
+}
+
+.card {
+  @apply bg-partrunner-bg-card rounded-2xl border border-partrunner-gray-light
+         shadow-card transition-all duration-200;
+}
+
+.card-hover {
+  @apply hover:shadow-card-hover hover:-translate-y-0.5;
+}
+
+.input-base {
+  @apply w-full bg-white border-2 border-gray-200 rounded-xl
+         py-2.5 px-4 outline-none
+         transition-all duration-200
+         text-partrunner-black placeholder-gray-400;
+}
+
+.input-base:focus {
+  @apply border-partrunner-yellow ring-2 ring-partrunner-yellow/20;
+}
+
+.section-icon {
+  @apply bg-partrunner-yellow/20 text-partrunner-yellow-accent p-1.5 rounded-lg;
+}
+
+.section-title {
+  @apply font-bold text-partrunner-black text-lg;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
   width: 4px;
 }
@@ -18,9 +120,9 @@ html {
   background: transparent;
 }
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 2px;
 }
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
 }

@@ -12,15 +12,16 @@ App web que genera imágenes editoriales con IA para Partrunner (logística last
 - **Frontend:** React 19 + Vite 6 + Tailwind CSS 4 (SPA in `src/`)
 - **Backend:** Express server (`server.ts`) with two API routes
 - **AI Transform:** Claude Sonnet via Anthropic API (`/api/transform`)
-- **AI Image:** Gemini via Google AI API (`/api/generate`)
+- **AI Image:** Gemini 3 Pro Image Preview via Google AI API (`/api/generate`)
+- **Design System:** Partrunner DS — light theme, Inter font, #FFD840 yellow, #14142B black
 - **Deploy:** Railway (Express serves built frontend in production)
 
 ## Flow
 
-1. User enters simple prompt + selects format
+1. User enters simple prompt + selects format (6 options)
 2. `/api/transform` sends to Claude → returns editorial JSON
-3. `/api/generate` sends `prompt_compiled` to Gemini → returns base64 image
-4. Frontend displays image with download option
+3. `/api/generate` sends `prompt_compiled` to Gemini 3 Pro Image → returns base64 image (2K)
+4. Frontend displays image with download option + JSON viewer
 
 ## Key files
 
@@ -29,10 +30,13 @@ App web que genera imágenes editoriales con IA para Partrunner (logística last
 - `src/types/editorial.ts` — TypeScript interfaces for editorial JSON
 - `src/services/api.ts` — Frontend fetch calls to backend
 - `src/App.tsx` — Main UI component
+- `public/images/` — 7 logo variants (downloaded from Supabase)
 
 ## Rules
 
 - API keys NEVER in client code — always through Express backend
 - Brand identity is hardcoded in `src/data/brand.ts`, never user-configurable
 - System prompt is in `brand.ts` AND duplicated in `server.ts` (server version is authoritative)
-- `prompt_compiled` must NEVER include text rendering instructions (models can't render text)
+- `prompt_compiled` must NEVER include text rendering instructions
+- UI follows Partrunner Design System: light theme, #FFD840 yellow, Inter font
+- Gemini model: `gemini-3-pro-image-preview` (Nano Banana Pro) via `generateContent`

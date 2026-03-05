@@ -40,14 +40,16 @@ ELEMENTOS OBLIGATORIOS EN CADA IMAGEN:
 4. Iluminación cinematográfica (golden hour, blue hour, o iluminación nocturna dramática)
 
 PALETA DE MARCA (aplica solo a elementos de branding — la escena puede tener colores naturales):
-- Amarillo: #FDD238 (chalecos, acentos de vehículos, elementos de marca)
-- Negro: #000000 (fondos de logo, texto)
+- Amarillo Partrunner: #FFD840 (chalecos, acentos de vehículos, elementos de marca)
+- Negro Partrunner: #14142B (fondos de logo, texto)
 - Blanco: #FFFFFF (contraste)
+- Acento: #F29F05 (detalles dorados/cálidos)
 
 LOGO PARTRUNNER:
 - El logo debe estar presente visualmente — preferentemente en el vehículo como branding real (pintado en lateral, en puertas)
 - Alternativa: en el chaleco de los trabajadores
 - El isotipo de Partrunner es una "R" estilizada como persona corriendo con un paquete
+- Logo negro sobre fondos amarillos, logo blanco/amarillo sobre fondos oscuros
 
 DIRECCIÓN DE CÁMARA:
 - Wide angle (24-35mm) para capturar la escena completa
@@ -131,7 +133,7 @@ Devuelve el JSON con esta estructura EXACTA (todos los campos son obligatorios):
     "depth_of_field": "Apertura y profundidad (ej: f/4)",
     "lighting": "Descripción completa de la iluminación"
   },
-  "color_palette": "Colores dominantes de la escena con hexadecimales incluyendo #FDD238",
+    "color_palette": "Colores dominantes de la escena con hexadecimales incluyendo #FFD840",
   "texture_mood": "Textura ambiental y atmósfera emocional",
   "do_not": ["lista de cosas que NO deben aparecer"],
   "prompt_compiled": "The full editorial prompt in ENGLISH, minimum 80 words. Rich photographic and cinematic terminology. Include instruction to leave clean negative space for text overlay. Do NOT include any text/typography rendering instructions."
@@ -177,22 +179,24 @@ app.post("/api/generate", async (req, res) => {
       return;
     }
 
-    const model = process.env.GEMINI_IMAGE_MODEL || "gemini-2.0-flash-preview-image-generation";
+    const model = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview";
 
     const response = await genai.models.generateContent({
       model,
-      contents: { parts: [{ text: prompt_compiled }] },
+      contents: prompt_compiled,
       config: {
         responseModalities: ["TEXT", "IMAGE"],
+        imageConfig: {
+          aspectRatio: aspect_ratio || "16:9",
+          imageSize: "2K",
+        },
       } as Record<string, unknown>,
     });
 
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         const mimeType = part.inlineData.mimeType || "image/png";
-        res.json({
-          image: `data:${mimeType};base64,${part.inlineData.data}`,
-        });
+        res.json({ image: `data:${mimeType};base64,${part.inlineData.data}` });
         return;
       }
     }

@@ -37,7 +37,7 @@ export default function App() {
       setStep("transformed");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error desconocido";
-      setError(`Error al transformar: ${msg}`);
+      setError(msg);
       setStep("input");
     }
   };
@@ -52,7 +52,7 @@ export default function App() {
       setStep("complete");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error desconocido";
-      setError(`Error al generar imagen: ${msg}`);
+      setError(msg);
       setStep("transformed");
     }
   };
@@ -76,297 +76,279 @@ export default function App() {
   const isWorking = step === "transforming" || step === "generating";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-[#FDD238]/30">
-      {/* ── Header ─────────────────────────────────────────────── */}
-      <header className="border-b border-white/10 bg-black/60 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-partrunner-bg-main">
+      {/* ── Yellow Header ──────────────────────────────────── */}
+      <header className="relative bg-partrunner-yellow overflow-hidden">
+        {/* Decorative circles */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-20">
+          <div className="flex items-center justify-between mb-8">
             <img
-              src={BRAND.logos.iso_negative.url}
+              src={BRAND.logos.fullBlack}
               alt="Partrunner"
-              className="w-8 h-8 object-contain"
+              className="h-10 w-auto"
             />
-            <span className="font-bold text-base tracking-tight">
-              Partrunner{" "}
-              <span className="text-white/40 font-normal">Image Generator</span>
-            </span>
-          </div>
-          <div className="hidden sm:flex items-center gap-3 text-xs text-white/50">
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Online</span>
+            <div className="flex items-center gap-2 text-partrunner-black/60 text-xs font-medium">
+              <div className="w-2 h-2 rounded-full bg-partrunner-green animate-pulse" />
+              <span>Sistema activo</span>
             </div>
-            <span className="px-2 py-0.5 rounded-full border border-white/10 font-mono">
-              v3.0
-            </span>
+          </div>
+          <div className="text-center">
+            <h1 className="text-3xl md:text-4xl font-bold text-partrunner-black">
+              Generador de Imágenes Editorial
+            </h1>
+            <p className="text-partrunner-black/70 mt-2 text-sm md:text-base">
+              {BRAND.editorial_style.genre}
+            </p>
           </div>
         </div>
       </header>
 
-      {/* ── Main ───────────────────────────────────────────────── */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          {/* ── Left column: input & controls ─────────────────── */}
-          <div className="lg:col-span-4 space-y-6">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-light tracking-tight mb-3">
-                Crea imágenes{" "}
-                <span className="italic text-[#FDD238]">editoriales</span>
-              </h1>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Describe tu idea y la IA la transformará en una pieza visual de
-                nivel campaña publicitaria.
-              </p>
-            </div>
+      {/* ── Main Content (overlapping header) ──────────────── */}
+      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 -mt-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* ── Left: Input & Controls ─────────────────────── */}
+          <div className="lg:col-span-4 space-y-4">
+            <div className="card p-6 rounded-3xl">
+              <h2 className="section-title mb-4">Describe tu idea</h2>
 
-            {/* Textarea */}
-            <div className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#FDD238] to-[#FDD238]/40 rounded-2xl opacity-0 group-focus-within:opacity-20 transition duration-500 blur" />
-              <div className="relative bg-[#111] rounded-xl border border-white/10 p-1">
-                <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe tu idea... (ej: 'entrega en el espacio', 'logística para dinosaurios')"
-                  className="w-full h-32 bg-transparent text-white p-3 resize-none focus:outline-none placeholder:text-white/20 text-sm leading-relaxed"
-                  disabled={isWorking}
+              {/* Textarea */}
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Ej: 'entrega en el espacio', 'logística para dinosaurios'..."
+                className="input-base h-28 resize-none mb-4"
+                disabled={isWorking}
+              />
+
+              {/* Format */}
+              <div className="mb-4">
+                <label className="text-xs font-semibold text-partrunner-gray-dark uppercase tracking-wider mb-2 block">
+                  Formato
+                </label>
+                <FormatSelector
+                  selected={selectedFormat}
+                  onChange={setSelectedFormat}
+                  disabled={isWorking || step === "transformed" || step === "complete"}
                 />
               </div>
+
+              {/* Error */}
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    className="p-3 rounded-xl bg-partrunner-red/10 border border-partrunner-red/20 text-partrunner-red flex items-start gap-2 mb-4"
+                  >
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs leading-relaxed">{error}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Action buttons */}
+              <AnimatePresence mode="wait">
+                {step === "input" && (
+                  <motion.button
+                    key="transform"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    onClick={handleTransform}
+                    disabled={!prompt.trim()}
+                    className="btn-primary w-full flex items-center justify-center gap-2"
+                  >
+                    <Sparkles size={16} />
+                    Transformar Prompt
+                  </motion.button>
+                )}
+
+                {step === "transforming" && (
+                  <motion.div
+                    key="transforming"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="w-full py-3 bg-partrunner-yellow-light border border-partrunner-yellow/30 rounded-xl flex items-center justify-center gap-2 text-partrunner-black text-sm"
+                  >
+                    <Loader2 size={16} className="animate-spin text-partrunner-yellow-accent" />
+                    Claude está creando el prompt editorial...
+                  </motion.div>
+                )}
+
+                {step === "transformed" && (
+                  <motion.div
+                    key="transformed"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="flex gap-2"
+                  >
+                    <button
+                      onClick={handleGenerate}
+                      className="btn-primary flex-1 flex items-center justify-center gap-2"
+                    >
+                      <Zap size={16} />
+                      Generar Imagen
+                    </button>
+                    <button
+                      onClick={() => { setEditorialData(null); setStep("input"); }}
+                      className="btn-secondary px-3"
+                      title="Volver a transformar"
+                    >
+                      <RotateCcw size={16} />
+                    </button>
+                  </motion.div>
+                )}
+
+                {step === "generating" && (
+                  <motion.div
+                    key="generating"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="w-full py-3 bg-partrunner-yellow-light border border-partrunner-yellow/30 rounded-xl flex items-center justify-center gap-2 text-partrunner-black text-sm"
+                  >
+                    <Loader2 size={16} className="animate-spin text-partrunner-yellow-accent" />
+                    Gemini está generando la imagen...
+                  </motion.div>
+                )}
+
+                {step === "complete" && (
+                  <motion.div
+                    key="complete"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="flex gap-2"
+                  >
+                    <button
+                      onClick={handleDownload}
+                      className="btn-primary flex-1 flex items-center justify-center gap-2"
+                    >
+                      <Download size={16} />
+                      Descargar
+                    </button>
+                    <button
+                      onClick={reset}
+                      className="btn-secondary px-4 flex items-center gap-2"
+                    >
+                      <ArrowRight size={16} />
+                      Nueva
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Format selector */}
-            <div>
-              <h3 className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-2">
-                Formato
-              </h3>
-              <FormatSelector
-                selected={selectedFormat}
-                onChange={setSelectedFormat}
-                disabled={isWorking || step === "transformed" || step === "complete"}
-              />
-            </div>
-
-            {/* Error */}
-            <AnimatePresence>
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 flex items-start gap-2.5"
-                >
-                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs leading-relaxed">{error}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Action buttons */}
-            <AnimatePresence mode="wait">
-              {step === "input" && (
-                <motion.button
-                  key="transform"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  onClick={handleTransform}
-                  disabled={!prompt.trim()}
-                  className="w-full py-3.5 bg-[#FDD238] text-black font-semibold rounded-xl hover:bg-[#FDD238]/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Transformar Prompt
-                </motion.button>
-              )}
-
-              {step === "transforming" && (
-                <motion.div
-                  key="transforming"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="w-full py-3.5 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center gap-2.5 text-white/70 text-sm"
-                >
-                  <Loader2 className="w-4 h-4 animate-spin text-[#FDD238]" />
-                  Claude está creando el prompt editorial...
-                </motion.div>
-              )}
-
-              {step === "transformed" && (
-                <motion.div
-                  key="transformed"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="flex gap-2"
-                >
-                  <button
-                    onClick={handleGenerate}
-                    className="flex-1 py-3.5 bg-[#FDD238] text-black font-semibold rounded-xl hover:bg-[#FDD238]/90 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Zap className="w-4 h-4" />
-                    Generar Imagen
-                  </button>
-                  <button
-                    onClick={() => { setEditorialData(null); setStep("input"); }}
-                    className="px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors text-white/60"
-                    title="Volver a transformar"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                  </button>
-                </motion.div>
-              )}
-
-              {step === "generating" && (
-                <motion.div
-                  key="generating"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="w-full py-3.5 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center gap-2.5 text-white/70 text-sm"
-                >
-                  <Loader2 className="w-4 h-4 animate-spin text-[#FDD238]" />
-                  Gemini está generando la imagen...
-                </motion.div>
-              )}
-
-              {step === "complete" && (
-                <motion.div
-                  key="complete"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="flex gap-2"
-                >
-                  <button
-                    onClick={handleDownload}
-                    className="flex-1 py-3.5 bg-[#FDD238] text-black font-semibold rounded-xl hover:bg-[#FDD238]/90 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    Descargar Imagen
-                  </button>
-                  <button
-                    onClick={reset}
-                    className="px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors flex items-center justify-center gap-2 text-white/60"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Brand indicator */}
-            <div className="pt-6 border-t border-white/[0.06]">
-              <h3 className="text-[10px] font-mono uppercase tracking-widest text-white/30 mb-3">
-                Marca activa
-              </h3>
+            {/* Brand context */}
+            <div className="card p-4 rounded-2xl">
               <div className="flex items-center gap-3">
-                <img
-                  src={BRAND.logos.full_negative.url}
-                  alt="Partrunner"
-                  className="h-6 object-contain opacity-70"
-                />
-                <div className="text-[10px] text-white/40 font-mono">
-                  {BRAND.editorial_style.genre}
+                <div className="section-icon">
+                  <img src={BRAND.logos.iconColor} alt="" className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-partrunner-black">{BRAND.name}</div>
+                  <div className="text-xs text-partrunner-gray-dark">{BRAND.editorial_style.genre}</div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ── Right column: output ──────────────────────────── */}
+          {/* ── Right: Output ──────────────────────────────── */}
           <div className="lg:col-span-8 flex flex-col gap-4">
-            {/* Main viewport */}
-            <div className="flex-1 min-h-[500px] lg:min-h-[600px] bg-[#111] rounded-2xl border border-white/10 overflow-hidden relative">
-              {/* Grid background */}
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]" />
-
-              <div className="relative p-6 sm:p-8 h-full flex flex-col">
+            {/* Image viewport */}
+            <div className="card rounded-3xl overflow-hidden min-h-[500px] lg:min-h-[560px] relative">
+              <div className="p-6 sm:p-8 h-full flex flex-col">
                 {/* Empty state */}
                 {step === "input" && (
-                  <div className="flex-1 flex flex-col items-center justify-center text-white/15">
-                    <div className="w-20 h-20 rounded-full bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-4">
-                      <ImageIcon className="w-8 h-8" />
+                  <div className="flex-1 flex flex-col items-center justify-center text-partrunner-gray-light">
+                    <div className="w-20 h-20 rounded-full bg-partrunner-bg-main flex items-center justify-center mb-4">
+                      <ImageIcon size={32} className="text-partrunner-gray-light" />
                     </div>
-                    <p className="font-mono text-xs">Describe tu idea para comenzar</p>
+                    <p className="text-sm text-partrunner-gray-dark">Describe tu idea para comenzar</p>
                   </div>
                 )}
 
-                {/* Transforming state */}
+                {/* Transforming */}
                 {step === "transforming" && (
-                  <div className="flex-1 flex flex-col items-center justify-center gap-6">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-                      className="w-16 h-16 rounded-full border-2 border-[#FDD238]/20 border-t-[#FDD238] flex items-center justify-center"
-                    >
-                      <Sparkles className="w-6 h-6 text-[#FDD238]" />
-                    </motion.div>
+                  <div className="flex-1 flex flex-col items-center justify-center gap-5">
+                    <div className="w-16 h-16 rounded-full bg-partrunner-yellow-light border-2 border-partrunner-yellow/30 flex items-center justify-center">
+                      <Sparkles size={24} className="text-partrunner-yellow-accent animate-pulse" />
+                    </div>
                     <div className="text-center">
-                      <p className="text-white/70 text-sm mb-1">Transformando prompt...</p>
-                      <p className="text-white/30 text-xs font-mono">
-                        Claude → prompt editorial + dirección de arte
+                      <p className="text-partrunner-black font-medium text-sm">Transformando prompt...</p>
+                      <p className="text-partrunner-gray-dark text-xs mt-1">
+                        Claude → dirección de arte editorial
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Transformed — show editorial data preview */}
+                {/* Transformed preview */}
                 {step === "transformed" && editorialData && (
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex-1 flex flex-col justify-center max-w-2xl mx-auto w-full gap-6"
+                    className="flex-1 flex flex-col justify-center max-w-2xl mx-auto w-full gap-5"
                   >
-                    <div className="flex items-center gap-2 text-[#FDD238]">
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span className="font-mono text-xs tracking-wide">PROMPT EDITORIAL LISTO</span>
+                    <div className="flex items-center gap-2 text-partrunner-green">
+                      <CheckCircle2 size={16} />
+                      <span className="text-xs font-semibold uppercase tracking-wider">Prompt editorial listo</span>
                     </div>
 
-                    {/* Headline preview */}
-                    <div className="bg-black/50 border border-[#FDD238]/20 rounded-xl p-6">
-                      <p className="text-[#FDD238] text-2xl font-bold tracking-tight mb-4">
+                    <div className="bg-partrunner-yellow-light border border-partrunner-yellow/20 rounded-2xl p-6">
+                      <p className="text-partrunner-black font-bold text-xl mb-3">
                         {editorialData.headline.text}
                       </p>
-                      <p className="text-white/80 text-sm leading-relaxed mb-4">
+                      <p className="text-partrunner-gray-dark text-sm leading-relaxed mb-4">
                         {editorialData.scene.description}
                       </p>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         <MiniCard label="Surreal" value={editorialData.scene.surreal_element} />
                         <MiniCard label="Iluminación" value={editorialData.camera.lighting} />
                         <MiniCard label="Cámara" value={editorialData.camera.angle} />
                         <MiniCard label="Mood" value={editorialData.scene.mood} />
                         <MiniCard label="Logo" value={`${editorialData.logo.variant} / ${editorialData.logo.placement}`} />
-                        <MiniCard label="Formato" value={`${editorialData.metadata.aspect_ratio} ${editorialData.metadata.resolution}`} />
+                        <MiniCard label="Formato" value={`${editorialData.metadata.aspect_ratio}`} />
                       </div>
                     </div>
 
-                    <p className="text-white/30 text-xs text-center font-mono">
-                      Haz clic en "Generar Imagen" para enviar a Gemini →
+                    <p className="text-partrunner-gray-dark text-xs text-center">
+                      Haz clic en <strong>"Generar Imagen"</strong> para enviar a Gemini
                     </p>
                   </motion.div>
                 )}
 
-                {/* Generating state */}
+                {/* Generating */}
                 {step === "generating" && (
-                  <div className="flex-1 flex flex-col items-center justify-center gap-6">
+                  <div className="flex-1 flex flex-col items-center justify-center gap-5">
                     <motion.div
-                      className="relative w-24 h-24"
+                      className="relative w-20 h-20"
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ repeat: Infinity, duration: 2 }}
                     >
-                      <div className="absolute inset-0 rounded-full bg-[#FDD238]/10 animate-ping" />
-                      <div className="absolute inset-2 rounded-full bg-[#FDD238]/5 border border-[#FDD238]/20 flex items-center justify-center">
-                        <ImageIcon className="w-8 h-8 text-[#FDD238]/60" />
+                      <div className="absolute inset-0 rounded-full bg-partrunner-yellow/20 animate-ping" />
+                      <div className="absolute inset-2 rounded-full bg-partrunner-yellow-light border-2 border-partrunner-yellow/30 flex items-center justify-center">
+                        <ImageIcon size={28} className="text-partrunner-yellow-accent" />
                       </div>
                     </motion.div>
                     <div className="text-center">
-                      <p className="text-white/70 text-sm mb-1">Generando imagen...</p>
-                      <p className="text-white/30 text-xs font-mono">
+                      <p className="text-partrunner-black font-medium text-sm">Generando imagen...</p>
+                      <p className="text-partrunner-gray-dark text-xs mt-1">
                         Gemini → render editorial {format.aspect_ratio}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Complete — show image */}
+                {/* Complete — image */}
                 {step === "complete" && generatedImage && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.97 }}
@@ -374,27 +356,27 @@ export default function App() {
                     className="flex-1 flex flex-col"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2 text-emerald-400">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span className="font-mono text-xs">IMAGEN LISTA</span>
+                      <div className="flex items-center gap-2 text-partrunner-green">
+                        <CheckCircle2 size={16} />
+                        <span className="text-xs font-semibold uppercase tracking-wider">Imagen lista</span>
                       </div>
                       <div className="flex gap-1.5">
-                        <span className="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-white/50">
+                        <span className="px-2 py-0.5 rounded-full bg-partrunner-yellow-50 text-partrunner-yellow-accent text-[10px] font-semibold">
                           {format.resolution}
                         </span>
-                        <span className="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-white/50">
+                        <span className="px-2 py-0.5 rounded-full bg-partrunner-yellow-50 text-partrunner-yellow-accent text-[10px] font-semibold">
                           {format.aspect_ratio}
                         </span>
                       </div>
                     </div>
-                    <div className="relative flex-1 rounded-xl overflow-hidden border border-white/10 group">
+                    <div className="relative flex-1 rounded-2xl overflow-hidden border border-partrunner-gray-light group">
                       <img
                         src={generatedImage}
                         alt={editorialData?.headline.text || "Generated image"}
                         className="absolute inset-0 w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5">
-                        <p className="text-[#FDD238] font-bold text-lg">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5">
+                        <p className="text-white font-bold text-lg drop-shadow-lg">
                           {editorialData?.headline.text}
                         </p>
                       </div>
@@ -404,22 +386,28 @@ export default function App() {
               </div>
             </div>
 
-            {/* JSON viewer panel (visible after transform) */}
+            {/* JSON viewer */}
             {editorialData && (step === "transformed" || step === "generating" || step === "complete") && (
               <JsonViewer data={editorialData} />
             )}
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="max-w-7xl mx-auto px-4 sm:px-6 py-8 mt-8 flex items-center justify-center gap-2 text-partrunner-gray-dark text-xs">
+        <img src={BRAND.logos.iconColor} alt="" className="h-4 w-4" />
+        <span>Partrunner Technologies — 2026</span>
+      </footer>
     </div>
   );
 }
 
 function MiniCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="p-2.5 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-      <div className="text-[9px] text-white/30 uppercase tracking-wider mb-0.5 font-mono">{label}</div>
-      <div className="text-xs text-white/70 leading-snug line-clamp-2">{value}</div>
+    <div className="p-2 bg-white rounded-xl border border-partrunner-gray-light/50">
+      <div className="text-[9px] text-[--color-text-muted] uppercase tracking-wider mb-0.5 font-semibold">{label}</div>
+      <div className="text-xs text-partrunner-gray-dark leading-snug line-clamp-2">{value}</div>
     </div>
   );
 }

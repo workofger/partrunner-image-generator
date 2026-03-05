@@ -1,33 +1,49 @@
 ---
-description: Partrunner brand identity rules — enforced in all visual and prompt decisions
-globs: src/data/brand.ts
-alwaysApply: false
+description: Partrunner official design system — colors, typography, components
+alwaysApply: true
 ---
 
-# Partrunner Brand Identity
+# Partrunner Design System
 
-## Colors (STRICT — only these 3 for brand elements)
+Source of truth for all visual decisions in this project.
 
-- `#FDD238` — Partrunner Yellow (headlines, accents, vests)
-- `#000000` — Black (logo backgrounds, secondary text)
-- `#FFFFFF` — White (contrast)
-- Scene colors can be natural — restriction applies to typography, logo, brand overlays
+## Colors (use Tailwind tokens, never hardcode hex)
 
-## Editorial style
+| Token | Hex | Use |
+|---|---|---|
+| `partrunner-yellow` | #FFD840 | Primary: headers, CTAs, badges |
+| `partrunner-yellow-dark` | #FED330 | Hover states |
+| `partrunner-yellow-accent` | #F29F05 | Text accents, icons |
+| `partrunner-yellow-light` | #FFF9E5 | Callout backgrounds |
+| `partrunner-black` | #14142B | Primary text, headings |
+| `partrunner-gray-dark` | #4E4B66 | Body text |
+| `partrunner-gray-light` | #D9DBE9 | Borders, dividers |
+| `partrunner-bg-main` | #F5F7FB | Page background |
+| `partrunner-bg-card` | #FFFFFF | Cards, modals |
 
-- Genre: "Hiperrealismo cinematográfico + surrealismo logístico"
-- Surreal/absurd scenes where Partrunner logistics solves the impossible
-- Smart Mexican humor — irreverent but never vulgar
-- Every image MUST have: branded vehicle, worker with vest, surreal element, cinematic lighting
+## Typography — Inter only
 
-## Logo rules
+- Headlines: `font-bold` (700)
+- Body: `font-normal` (400)
+- Labels: `text-xs font-semibold uppercase tracking-wider`
+- NEVER use Bebas Neue, Barlow, or monospace for user-facing text
 
-- Logo URLs are real Supabase URLs — don't replace them
-- Logo must always be present in generated concepts (on vehicle or worker vest)
-- AI image models CANNOT render actual logos — use as metadata for post-processing
+## Components (use CSS classes from index.css)
 
-## Text in images
+- `.btn-primary` — yellow CTA with glow shadow
+- `.btn-secondary` — gray neutral
+- `.btn-ghost` — transparent
+- `.card` — white, rounded-2xl, shadow-card, border
+- `.input-base` — white, border-2, yellow focus ring
 
-- AI models CANNOT reliably render text
-- `prompt_compiled` should include "leave clean negative space for text overlay"
-- Headlines are generated as METADATA, not as image generation instructions
+## Logo assets in public/images/
+
+- On yellow bg → `logo-full-black.png`
+- On dark bg → `logo-full-white.png`
+- Favicon → `icon-color.png`
+
+## Editorial images (AI-generated)
+
+- Brand color in prompts: #FFD840 (not #FDD238 or #FFC107)
+- AI models cannot render text — headlines are metadata for overlay
+- prompt_compiled should request "clean negative space for text overlay"

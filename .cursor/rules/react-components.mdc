@@ -13,18 +13,31 @@ alwaysApply: false
 - Icons from `lucide-react`
 - Styling with Tailwind CSS 4 utility classes inline
 
-## Color palette (use these exact values)
+## Design System tokens (use Tailwind tokens, not raw hex)
 
-- Primary yellow: `#FDD238` → `bg-[#FDD238]`, `text-[#FDD238]`
-- Black: `#000000`
-- White: `#FFFFFF`
-- Dark backgrounds: `bg-[#0a0a0a]`, `bg-[#111]`
-- Borders: `border-white/10`
+- Primary yellow: `bg-partrunner-yellow` (`#FFD840`)
+- Black: `text-partrunner-black` (`#14142B`)
+- Page bg: `bg-partrunner-bg-main` (`#F5F7FB`)
+- Cards: `bg-partrunner-bg-card` (white)
+- Borders: `border-partrunner-gray-light` (`#D9DBE9`)
+- Body text: `text-partrunner-gray-dark` (`#4E4B66`)
+- Use `.btn-primary`, `.card`, `.input-base` CSS classes from index.css
+
+## UI theme
+
+- Light theme (NOT dark)
+- Header: yellow background with black logo/text
+- Cards: white with subtle shadow
+- Font: Inter only
+
+## Step state machine
+
+The app uses a `Step` type: `"input" | "transforming" | "transformed" | "generating" | "complete"`.
+All UI conditional rendering is based on this state.
 
 ## Error handling
 
 ```tsx
-// Always type errors properly in catch blocks
 catch (err: unknown) {
   const msg = err instanceof Error ? err.message : "Error desconocido";
   setError(msg);
