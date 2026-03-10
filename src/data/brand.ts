@@ -215,10 +215,17 @@ REGLA SOBRE TEXTO EN LA IMAGEN:
 - El campo headline se genera como METADATA para composición posterior.
 - Si el usuario pide explícitamente texto en la imagen, entonces SÍ puedes incluirlo en el prompt_compiled con la instrucción de renderizarlo.
 
+CONTROLES DE GENERACIÓN:
+- El usuario puede ajustar 4 parámetros (0-100%): Surrealismo, Cinematografía, Presencia de marca, Detalle.
+- RESPETA estos valores fielmente. Si surrealismo es 0-25%, la escena debe ser 100% realista y profesional.
+- Si cinematografía es baja, usa iluminación plana y limpia. Si es alta, usa golden hour/blue hour/dramática.
+- Si presencia de marca es baja, el logo es pequeño y sutil. Si es alta, el branding es protagonista.
+- Si el usuario activó "Texto en imagen", incluye la instrucción de renderizar ese texto exacto en el prompt_compiled.
+
 Cuando recibas un prompt del usuario:
 1. Identifica el concepto central
-2. Inventa una escena surreal que conecte el concepto con la logística
-3. Genera un headline memorable en español mexicano (máx 8 palabras, humor inteligente)
-4. Describe la escena con detalle cinematográfico
+2. Crea una escena acorde al nivel de surrealismo indicado (puede ser 100% profesional si el slider es bajo)
+3. Genera un headline memorable en español mexicano (máx 8 palabras)
+4. Describe la escena con el nivel de detalle cinematográfico indicado
 5. Compila un prompt editorial completo en INGLÉS para el modelo de imagen (mínimo 80 palabras). OBLIGATORIO incluir en el prompt_compiled: "The Partrunner logo shown in the reference image must appear IDENTICALLY reproduced in the scene — exact same shape, proportions, colors, and details. Do NOT redesign, reinterpret, or approximate the logo. Place it [placement]."
 6. Devuelve ÚNICAMENTE el JSON válido — sin markdown, sin backticks, sin texto antes ni después`;

@@ -10,12 +10,23 @@ import {
   RotateCcw,
   Zap,
   ArrowRight,
+  SlidersHorizontal,
+  ChevronDown,
 } from "lucide-react";
 import { BRAND, FORMATS, type FormatKey } from "./data/brand";
-import type { EditorialPrompt, Step } from "./types/editorial";
+import type {
+  EditorialPrompt,
+  Step,
+  GenerationSettings,
+  TextOverlay,
+} from "./types/editorial";
+import { DEFAULT_SETTINGS, DEFAULT_TEXT_OVERLAY } from "./types/editorial";
 import { transformPrompt, generateImage } from "./services/api";
 import FormatSelector from "./components/FormatSelector";
 import JsonViewer from "./components/JsonViewer";
+import GenerationSliders from "./components/GenerationSliders";
+import PromptTemplates from "./components/PromptTemplates";
+import TextOverlayControls from "./components/TextOverlayControls";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
@@ -24,15 +35,21 @@ export default function App() {
   const [editorialData, setEditorialData] = useState<EditorialPrompt | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [settings, setSettings] = useState<GenerationSettings>(DEFAULT_SETTINGS);
+  const [textOverlay, setTextOverlay] = useState<TextOverlay>(DEFAULT_TEXT_OVERLAY);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showSliders, setShowSliders] = useState(true);
 
   const format = FORMATS[selectedFormat];
+  const isWorking = step === "transforming" || step === "generating";
+  const isLocked = isWorking || step === "transformed" || step === "complete";
 
   const handleTransform = async () => {
     if (!prompt.trim()) return;
     setStep("transforming");
     setError(null);
     try {
-      const data = await transformPrompt(prompt, format);
+      const data = await transformPrompt(prompt, format, settings, textOverlay);
       setEditorialData(data);
       setStep("transformed");
     } catch (err: unknown) {
@@ -77,86 +94,152 @@ export default function App() {
     setError(null);
   };
 
-  const isWorking = step === "transforming" || step === "generating";
-
   return (
     <div className="min-h-screen bg-partrunner-bg-main">
       {/* ── Yellow Header ──────────────────────────────────── */}
       <header className="relative bg-partrunner-yellow overflow-hidden">
-        {/* Decorative circles */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
         </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-20">
-          <div className="flex items-center justify-between mb-8">
-            <img
-              src={BRAND.logos.fullBlack}
-              alt="Partrunner"
-              className="h-10 w-auto"
-            />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-5 pb-16">
+          <div className="flex items-center justify-between mb-6">
+            <img src={BRAND.logos.fullBlack} alt="Partrunner" className="h-9 w-auto" />
             <div className="flex items-center gap-2 text-partrunner-black/60 text-xs font-medium">
               <div className="w-2 h-2 rounded-full bg-partrunner-green animate-pulse" />
               <span>Sistema activo</span>
             </div>
           </div>
           <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-partrunner-black">
+            <h1 className="text-2xl md:text-3xl font-bold text-partrunner-black">
               Generador de Imágenes Editorial
             </h1>
-            <p className="text-partrunner-black/70 mt-2 text-sm md:text-base">
+            <p className="text-partrunner-black/70 mt-1.5 text-sm">
               {BRAND.editorial_style.genre}
             </p>
           </div>
         </div>
       </header>
 
-      {/* ── Main Content (overlapping header) ──────────────── */}
-      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 -mt-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* ── Left: Input & Controls ─────────────────────── */}
-          <div className="lg:col-span-4 space-y-4">
-            <div className="card p-6 rounded-3xl">
-              <h2 className="section-title mb-4">Describe tu idea</h2>
+      {/* ── Main Content ──────────────────────────────────── */}
+      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 -mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* ── Left Panel ─────────────────────────────────── */}
+          <div className="lg:col-span-4 space-y-4 lg:max-h-[calc(100vh-180px)] lg:overflow-y-auto lg:pr-1">
 
-              {/* Textarea */}
+            {/* Prompt input card */}
+            <div className="card p-5 rounded-2xl">
+              <h2 className="font-bold text-partrunner-black text-base mb-3">Describe tu idea</h2>
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Ej: 'entrega en el espacio', 'logística para dinosaurios'..."
-                className="input-base h-28 resize-none mb-4"
+                placeholder="Ej: 'entrega en el espacio', 'operación nocturna en centro de distribución'..."
+                className="input-base h-24 resize-none mb-3 text-sm"
                 disabled={isWorking}
               />
 
-              {/* Format */}
-              <div className="mb-4">
-                <label className="text-xs font-semibold text-partrunner-gray-dark uppercase tracking-wider mb-2 block">
-                  Formato
-                </label>
-                <FormatSelector
-                  selected={selectedFormat}
-                  onChange={setSelectedFormat}
-                  disabled={isWorking || step === "transformed" || step === "complete"}
-                />
-              </div>
-
-              {/* Error */}
+              {/* Template toggle */}
+              <button
+                type="button"
+                onClick={() => setShowTemplates(!showTemplates)}
+                className="flex items-center gap-1.5 text-[11px] font-semibold text-partrunner-yellow-accent hover:text-partrunner-black transition-colors mb-2 cursor-pointer"
+              >
+                <Sparkles size={11} />
+                Ideas de ejemplo
+                <ChevronDown size={11} className={`transition-transform ${showTemplates ? "rotate-180" : ""}`} />
+              </button>
               <AnimatePresence>
-                {error && (
+                {showTemplates && (
                   <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    className="p-3 rounded-xl bg-partrunner-red/10 border border-partrunner-red/20 text-partrunner-red flex items-start gap-2 mb-4"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
                   >
-                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs leading-relaxed">{error}</p>
+                    <div className="pb-2">
+                      <PromptTemplates
+                        onSelect={(t) => { setPrompt(t); setShowTemplates(false); }}
+                        disabled={isWorking}
+                      />
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
 
-              {/* Action buttons */}
+            {/* Format selector card */}
+            <div className="card p-5 rounded-2xl">
+              <label className="text-xs font-semibold text-partrunner-gray-dark uppercase tracking-wider mb-2.5 block">
+                Formato de salida
+              </label>
+              <FormatSelector
+                selected={selectedFormat}
+                onChange={setSelectedFormat}
+                disabled={isLocked}
+              />
+            </div>
+
+            {/* Generation sliders card */}
+            <div className="card p-5 rounded-2xl">
+              <button
+                type="button"
+                onClick={() => setShowSliders(!showSliders)}
+                className="flex items-center justify-between w-full cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal size={14} className="text-partrunner-yellow-accent" />
+                  <span className="text-xs font-semibold text-partrunner-black uppercase tracking-wider">
+                    Controles de generación
+                  </span>
+                </div>
+                <ChevronDown size={14} className={`text-partrunner-gray-dark transition-transform ${showSliders ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {showSliders && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-4">
+                      <GenerationSliders
+                        settings={settings}
+                        onChange={setSettings}
+                        disabled={isLocked}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Text overlay card */}
+            <div className="card p-5 rounded-2xl">
+              <TextOverlayControls
+                value={textOverlay}
+                onChange={setTextOverlay}
+                disabled={isLocked}
+              />
+            </div>
+
+            {/* Error */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="p-3 rounded-xl bg-partrunner-red/10 border border-partrunner-red/20 text-partrunner-red flex items-start gap-2"
+                >
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs leading-relaxed">{error}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Action buttons */}
+            <div className="sticky bottom-0 bg-partrunner-bg-main pt-2 pb-4">
               <AnimatePresence mode="wait">
                 {step === "input" && (
                   <motion.button
@@ -250,27 +333,13 @@ export default function App() {
                 )}
               </AnimatePresence>
             </div>
-
-            {/* Brand context */}
-            <div className="card p-4 rounded-2xl">
-              <div className="flex items-center gap-3">
-                <div className="section-icon">
-                  <img src={BRAND.logos.iconColor} alt="" className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-partrunner-black">{BRAND.name}</div>
-                  <div className="text-xs text-partrunner-gray-dark">{BRAND.editorial_style.genre}</div>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* ── Right: Output ──────────────────────────────── */}
+          {/* ── Right Panel: Output ────────────────────────── */}
           <div className="lg:col-span-8 flex flex-col gap-4">
             {/* Image viewport */}
-            <div className="card rounded-3xl overflow-hidden min-h-[500px] lg:min-h-[560px] relative">
+            <div className="card rounded-3xl overflow-hidden min-h-[480px] lg:min-h-[540px] relative">
               <div className="p-6 sm:p-8 h-full flex flex-col">
-                {/* Empty state */}
                 {step === "input" && (
                   <div className="flex-1 flex flex-col items-center justify-center text-partrunner-gray-light">
                     <div className="w-20 h-20 rounded-full bg-partrunner-bg-main flex items-center justify-center mb-4">
@@ -280,7 +349,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Transforming */}
                 {step === "transforming" && (
                   <div className="flex-1 flex flex-col items-center justify-center gap-5">
                     <div className="w-16 h-16 rounded-full bg-partrunner-yellow-light border-2 border-partrunner-yellow/30 flex items-center justify-center">
@@ -288,14 +356,11 @@ export default function App() {
                     </div>
                     <div className="text-center">
                       <p className="text-partrunner-black font-medium text-sm">Transformando prompt...</p>
-                      <p className="text-partrunner-gray-dark text-xs mt-1">
-                        Claude → dirección de arte editorial
-                      </p>
+                      <p className="text-partrunner-gray-dark text-xs mt-1">Claude → dirección de arte editorial</p>
                     </div>
                   </div>
                 )}
 
-                {/* Transformed preview */}
                 {step === "transformed" && editorialData && (
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
@@ -306,7 +371,6 @@ export default function App() {
                       <CheckCircle2 size={16} />
                       <span className="text-xs font-semibold uppercase tracking-wider">Prompt editorial listo</span>
                     </div>
-
                     <div className="bg-partrunner-yellow-light border border-partrunner-yellow/20 rounded-2xl p-6">
                       <p className="text-partrunner-black font-bold text-xl mb-3">
                         {editorialData.headline.text}
@@ -323,14 +387,12 @@ export default function App() {
                         <MiniCard label="Formato" value={`${editorialData.metadata.aspect_ratio}`} />
                       </div>
                     </div>
-
                     <p className="text-partrunner-gray-dark text-xs text-center">
                       Haz clic en <strong>"Generar Imagen"</strong> para enviar a Gemini
                     </p>
                   </motion.div>
                 )}
 
-                {/* Generating */}
                 {step === "generating" && (
                   <div className="flex-1 flex flex-col items-center justify-center gap-5">
                     <motion.div
@@ -352,7 +414,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Complete — image */}
                 {step === "complete" && generatedImage && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.97 }}

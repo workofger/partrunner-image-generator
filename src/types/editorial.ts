@@ -37,3 +37,29 @@ export interface EditorialPrompt {
 }
 
 export type Step = "input" | "transforming" | "transformed" | "generating" | "complete";
+
+export interface GenerationSettings {
+  surrealism: number;
+  cinematography: number;
+  brandPresence: number;
+  detail: number;
+}
+
+export interface TextOverlay {
+  enabled: boolean;
+  text: string;
+  position: "top" | "center" | "bottom";
+}
+
+export const DEFAULT_SETTINGS: GenerationSettings = {
+  surrealism: 70,
+  cinematography: 80,
+  brandPresence: 60,
+  detail: 70,
+};
+
+export const DEFAULT_TEXT_OVERLAY: TextOverlay = {
+  enabled: false,
+  text: "",
+  position: "bottom",
+};

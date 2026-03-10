@@ -76,11 +76,18 @@ REGLA SOBRE TEXTO EN LA IMAGEN:
 - El campo headline se genera como METADATA para composición posterior.
 - Si el usuario pide explícitamente texto en la imagen, entonces SÍ puedes incluirlo en el prompt_compiled con la instrucción de renderizarlo.
 
+CONTROLES DE GENERACIÓN:
+- El usuario puede ajustar 4 parámetros (0-100%): Surrealismo, Cinematografía, Presencia de marca, Detalle.
+- RESPETA estos valores fielmente. Si surrealismo es 0-25%, la escena debe ser 100% realista y profesional.
+- Si cinematografía es baja, usa iluminación plana y limpia. Si es alta, usa golden hour/blue hour/dramática.
+- Si presencia de marca es baja, el logo es pequeño y sutil. Si es alta, el branding es protagonista.
+- Si el usuario activó "Texto en imagen", incluye la instrucción de renderizar ese texto exacto en el prompt_compiled.
+
 Cuando recibas un prompt del usuario:
 1. Identifica el concepto central
-2. Inventa una escena surreal que conecte el concepto con la logística
-3. Genera un headline memorable en español mexicano (máx 8 palabras, humor inteligente)
-4. Describe la escena con detalle cinematográfico
+2. Crea una escena acorde al nivel de surrealismo indicado (puede ser 100% profesional si el slider es bajo)
+3. Genera un headline memorable en español mexicano (máx 8 palabras)
+4. Describe la escena con el nivel de detalle cinematográfico indicado
 5. Compila un prompt editorial completo en INGLÉS para el modelo de imagen (mínimo 80 palabras). OBLIGATORIO incluir en el prompt_compiled: "The Partrunner logo shown in the reference image must appear IDENTICALLY reproduced in the scene — exact same shape, proportions, colors, and details. Do NOT redesign, reinterpret, or approximate the logo. Place it [placement]."
 6. Devuelve ÚNICAMENTE el JSON válido — sin markdown, sin backticks, sin texto antes ni después`;
 
@@ -90,11 +97,45 @@ Cuando recibas un prompt del usuario:
 
 app.post("/api/transform", async (req, res) => {
   try {
-    const { prompt, format } = req.body;
+    const { prompt, format, settings, textOverlay } = req.body;
 
     if (!prompt || !format) {
       res.status(400).json({ error: "prompt and format are required" });
       return;
+    }
+
+    const surr = settings?.surrealism ?? 70;
+    const cine = settings?.cinematography ?? 80;
+    const brand = settings?.brandPresence ?? 60;
+    const detail = settings?.detail ?? 70;
+
+    const surrLabel = surr <= 25 ? "MUY BAJO — escena 100% realista, profesional, corporativa, cero elementos fantásticos"
+      : surr <= 50 ? "BAJO — escena mayormente realista con un toque creativo sutil, nada absurdo"
+      : surr <= 75 ? "ALTO — escena con un elemento surreal/absurdo claro que crea tensión visual"
+      : "MUY ALTO — escena completamente absurda, onírica, imposible, máximo surrealismo";
+
+    const cineLabel = cine <= 25 ? "MÍNIMA — iluminación plana y limpia, estilo documental/corporativo"
+      : cine <= 50 ? "MODERADA — iluminación cuidada pero sin drama excesivo, estilo lifestyle premium"
+      : cine <= 75 ? "ALTA — iluminación cinematográfica con golden/blue hour, sombras dramáticas"
+      : "MÁXIMA — iluminación épica de película, contrastes extremos, volumétrica, atmosférica";
+
+    const brandLabel = brand <= 25 ? "SUTIL — logo pequeño y discreto, branding casi invisible"
+      : brand <= 50 ? "MODERADA — logo visible pero no dominante, branding en segundo plano"
+      : brand <= 75 ? "PROMINENTE — logo grande y visible, vehículos con branding claro, chalecos con logo"
+      : "MÁXIMA — branding es el protagonista visual, logo enorme, vehículos totalmente brandeados";
+
+    const detailLabel = detail <= 25 ? "MINIMAL — composición limpia, pocos elementos, mucho espacio negativo"
+      : detail <= 50 ? "MODERADO — escena con elementos suficientes pero no sobrecargada"
+      : detail <= 75 ? "DETALLADO — escena rica en props, personajes y elementos ambientales"
+      : "MÁXIMO — escena extremadamente detallada, muchos elementos, composición compleja";
+
+    let textInstruction = "";
+    if (textOverlay?.enabled && textOverlay.text?.trim()) {
+      const posMap: Record<string, string> = { top: "top area", center: "center", bottom: "bottom area" };
+      const pos = posMap[textOverlay.position] || "bottom area";
+      textInstruction = `\n\nTEXTO EN LA IMAGEN: El usuario quiere que aparezca el siguiente texto renderizado directamente en la imagen: "${textOverlay.text}". Posición: ${pos}. En el prompt_compiled, incluye la instrucción explícita de renderizar este texto con tipografía bold, legible y estilizada en la posición indicada.`;
+    } else {
+      textInstruction = `\n\nNO renderizar texto en la imagen. Incluir "leave clean negative space for headline text overlay in post-production" en el prompt_compiled.`;
     }
 
     const userMessage = `Transforma esta idea simple en un JSON editorial para generación de imágenes.
@@ -104,6 +145,12 @@ Idea del usuario: "${prompt}"
 Formato seleccionado: ${format.label} (${format.aspect_ratio}, ${format.resolution})
 Plataforma: ${format.platform}
 Notas de composición: ${format.notes}
+
+CONTROLES DE GENERACIÓN (ajusta el prompt_compiled según estos niveles):
+- Surrealismo: ${surr}% → ${surrLabel}
+- Cinematografía: ${cine}% → ${cineLabel}
+- Presencia de marca: ${brand}% → ${brandLabel}
+- Nivel de detalle: ${detail}% → ${detailLabel}${textInstruction}
 
 Devuelve el JSON con esta estructura EXACTA (todos los campos son obligatorios):
 {
@@ -127,7 +174,7 @@ Devuelve el JSON con esta estructura EXACTA (todos los campos son obligatorios):
     "setting": "Ubicación específica de la escena",
     "time_of_day": "golden_hour | blue_hour | night | midday | dawn",
     "mood": "Atmósfera emocional de la escena",
-    "surreal_element": "El elemento absurdo/imposible específico",
+    "surreal_element": "El elemento absurdo/imposible específico (si surrealismo es bajo, puede ser 'none' o un toque creativo sutil)",
     "logistics_elements": "Vehículos y operaciones logísticas presentes",
     "characters": "Descripción de personas: vestimenta, actitud, acción",
     "props": ["lista", "de", "props", "adicionales"]
@@ -136,12 +183,12 @@ Devuelve el JSON con esta estructura EXACTA (todos los campos son obligatorios):
     "angle": "Ángulo y perspectiva de la cámara",
     "focal_length": "Distancia focal (ej: 28mm)",
     "depth_of_field": "Apertura y profundidad (ej: f/4)",
-    "lighting": "Descripción completa de la iluminación"
+    "lighting": "Descripción completa de la iluminación (ajustada al nivel de cinematografía)"
   },
-    "color_palette": "Colores dominantes de la escena con hexadecimales incluyendo #FFD840",
+  "color_palette": "Colores dominantes de la escena con hexadecimales incluyendo #FFD840",
   "texture_mood": "Textura ambiental y atmósfera emocional",
   "do_not": ["lista de cosas que NO deben aparecer"],
-  "prompt_compiled": "The full editorial prompt in ENGLISH, minimum 80 words. Rich photographic and cinematic terminology. Include instruction to leave clean negative space for text overlay. Do NOT include any text/typography rendering instructions."
+  "prompt_compiled": "The full editorial prompt in ENGLISH, minimum 80 words. Adjust the tone, style, and complexity based on the generation controls above."
 }`;
 
     const message = await anthropic.messages.create({

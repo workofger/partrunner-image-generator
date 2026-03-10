@@ -1,4 +1,4 @@
-import type { EditorialPrompt } from "../types/editorial";
+import type { EditorialPrompt, GenerationSettings, TextOverlay } from "../types/editorial";
 import type { Format } from "../data/brand";
 
 const API_BASE = "";
@@ -6,11 +6,13 @@ const API_BASE = "";
 export async function transformPrompt(
   prompt: string,
   format: Format,
+  settings: GenerationSettings,
+  textOverlay: TextOverlay,
 ): Promise<EditorialPrompt> {
   const res = await fetch(`${API_BASE}/api/transform`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, format }),
+    body: JSON.stringify({ prompt, format, settings, textOverlay }),
   });
 
   if (!res.ok) {
